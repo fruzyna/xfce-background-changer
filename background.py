@@ -26,14 +26,17 @@ def getMonitorList(screens):
 
 def setMonitor(monitor, file):
     if file.startswith("f:"):
-        options = []
-        for filter in file.split(":")[1].split(","):
-            options += [f for f in files if filter in f]
-        file = random.choice(options)
+        file = random.choice(getFilteredFiles(file.split(":")[1].split(",")))
     elif file == "random":
         file = random.choice(files)
     changeWallpaper(monitor, image, file)
     return;
+
+def getFilteredFiles(filters):
+    options = []
+    for filter in filters:
+        options += [f for f in files if filter in f]
+    return options
 
 def help():
     print("Usage:")
@@ -59,6 +62,16 @@ if command == "set":
             setMonitor(monitor, sys.argv[3])
 elif command == "help":
     help()
+elif command == "list":
+    if len(sys.argv) > 2:
+        filters = [sys.argv[i] for i in range(2, len(sys.argv))] 
+        print("Files under " + ''.join(filters) + " in " + path)
+        for f in getFilteredFiles(filters):
+            print(f)
+    else:
+        print("Files in " + path)
+        for f in files:
+            print(f)
 else:
     print("Unknown Command")
     help()

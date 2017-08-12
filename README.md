@@ -22,3 +22,11 @@ python background.py set 1 f:filter
 python background.py set 0,1,2 random image.jpg f:filter
 
 -Sets monitor 0 to a random image, monitor 1 to image.jpg, and monitor 2 to a random image containing the phrase "filter"
+
+python background.py list
+
+-Lists all files in backgrounds directory
+
+python background.py list filter
+
+-Lists all files containing phrase "filter" in backgrounds directory
