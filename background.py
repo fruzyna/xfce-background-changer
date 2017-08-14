@@ -7,7 +7,7 @@ from os.path import isfile, join
 path = "/home/mail929/Dropbox/Walls"
 files = [f for f in listdir(path) if isfile(join(path, f))]
 image = "last-image"
-monitorCount = 3
+monitorCount = 1 
 
 def changeWallpaper(screen, type, files):
     bashCommand = "xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor" + screen + "/workspace0/" + type + " -s " + path + "/" + files 
