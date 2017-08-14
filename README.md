@@ -30,3 +30,11 @@ python background.py list
 python background.py list filter
 
 -Lists all files containing phrase "filter" in backgrounds directory
+
+python save configName
+
+-Saves current wallpapers to a file named configName.cfg
+
+python load configName
+
+-Loads current wallpapers from the file configName.cfg
