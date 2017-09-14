@@ -5,17 +5,33 @@ from os import listdir
 from os.path import isfile, join, splitext
 
 #definitions
-path = "/home/mail929/Dropbox/Walls"
+path = "/home/liam/Dropbox/Walls"
 files = [f for f in listdir(path) if isfile(join(path, f)) and splitext(f)[1] == ".jpg"]
 image = "last-image"
-monitorCount = 1 
+monitorCount = 0
+resolutions = ""
+
+#loads in settings from file
+def loadFromFile(fileName):
+    global monitorCount
+    global resolutions
+    if isfile(fileName):
+        file = open(fileName, 'r')
+        settings = file.read().split('\n')
+        for setting in settings:
+            parts = setting.split(":")
+            if parts[0] == "monitorCount":
+                monitorCount = int(parts[1])
+            elif parts[0] == "resolutions":
+                resolutions = parts[1]
+    return
 
 #runs the command to change the wallpaper according the the given criteria
 def changeWallpaper(screen, type, file):
     bashCommand = "xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor" + screen + "/workspace0/" + type + " -s " + path + "/" + file 
     process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
     output, error = process.communicate()
-    return;
+    return
 
 #converts an entered string to a list of monitor numbers
 def getMonitorList(screens):
@@ -34,7 +50,7 @@ def setMonitor(monitor, file):
     elif file == "random":
         file = randomWPrint(files)
     changeWallpaper(monitor, image, file)
-    return;
+    return
 
 #randomly chooses a file from a list then prints its name
 def randomWPrint(files):
@@ -62,6 +78,7 @@ def saveConfig(configName):
         output = output.replace("\n", "");
         file.write(output);
     file.close()
+    return
 
 #loads a previously saved wallpaper set from file
 def loadConfig(configName):
@@ -74,6 +91,7 @@ def loadConfig(configName):
         file.close()
     else:
         print("The provided config does not exist!")
+    return
 
 #prints out a help dialog briefly explaining all commands
 def help():
@@ -88,50 +106,57 @@ def help():
     print("[images]\tfile name in given directory, random, or a filter defined by f:[filter]")
     print("(filters)\toptional list of filters to sort with")
     print("[config name]\ta string for the config file name")
-
+    return
 
 #start actual script
+def main():
+    loadFromFile("background.cfg")
 
-#checks if there are any command arguments
-if len(sys.argv) == 1:
-    help()
-    sys.exit(0)
+    #checks if there are any command arguments
+    if len(sys.argv) == 1:
+        help()
+        sys.exit(0)
 
-length = len(sys.argv)
-command = sys.argv[1]
+    length = len(sys.argv)
+    command = sys.argv[1]
 
-#responds to the given command
-if command == "set":
-    i = 3
-    monitors = getMonitorList(sys.argv[2])
-    for monitor in monitors:
-        if length - 3 >= len(monitors):
-            setMonitor(monitor, sys.argv[i])
-            i = i + 1
+    #responds to the given command
+    if command == "set":
+        i = 3
+        monitors = getMonitorList(sys.argv[2])
+        for monitor in monitors:
+            if length - 3 >= len(monitors):
+                setMonitor(monitor, sys.argv[i])
+                i = i + 1
+            else:
+                setMonitor(monitor, sys.argv[3])
+    elif command == "help":
+        help()
+    elif command == "list":
+        if length > 2:
+            filters = [sys.argv[i] for i in range(2, length)] 
+            print("Files under " + ''.join(filters) + " in " + path)
+            for f in getFilteredFiles(filters):
+                print(f)
         else:
-            setMonitor(monitor, sys.argv[3])
-elif command == "help":
-    help()
-elif command == "list":
-    if length > 2:
-        filters = [sys.argv[i] for i in range(2, length)] 
-        print("Files under " + ''.join(filters) + " in " + path)
-        for f in getFilteredFiles(filters):
-            print(f)
+            print("Files in " + path)
+            for f in files:
+                print(f)
+    elif command == "save":
+        if length > 2:
+            saveConfig(sys.argv[2])
+        else:
+            print("A config name must be provided!");
+    elif command == "load":
+        if length > 2:
+            loadConfig(sys.argv[2])
+        else:
+            print("A config name must be provided!");
+    elif command == "config":
+        print("Loaded config info: " + str(monitorCount) + ":" + resolutions)
     else:
-        print("Files in " + path)
-        for f in files:
-            print(f)
-elif command == "save":
-    if length > 2:
-        saveConfig(sys.argv[2])
-    else:
-        print("A config name must be provided!");
-elif command == "load":
-    if length > 2:
-        loadConfig(sys.argv[2])
-    else:
-        print("A config name must be provided!");
-else:
-    print("Unknown Command")
-    help()
+        print("Unknown Command")
+        help()
+    return
+	
+main()
