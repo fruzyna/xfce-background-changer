@@ -117,12 +117,13 @@ def help():
 def main():
     loadFromFile("./background.cfg")
 
+    length = len(sys.argv)
+
     #checks if there are any command arguments
-    if len(sys.argv) == 1:
+    if length == 1:
         help()
         sys.exit(0)
 
-    length = len(sys.argv)
     command = sys.argv[1]
 
     #responds to the given command
