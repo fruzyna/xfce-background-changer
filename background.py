@@ -5,7 +5,7 @@ from os import listdir
 from os.path import isfile, join, splitext
 
 #definitions
-path = "/home/liam/Dropbox/Walls"
+path = "."
 files = [f for f in listdir(path) if isfile(join(path, f)) and splitext(f)[1] == ".jpg"]
 image = "last-image"
 monitorCount = 0
@@ -15,6 +15,8 @@ resolutions = ""
 def loadFromFile(fileName):
     global monitorCount
     global resolutions
+    global files
+    global path
     if isfile(fileName):
         file = open(fileName, 'r')
         settings = file.read().split('\n')
@@ -24,6 +26,9 @@ def loadFromFile(fileName):
                 monitorCount = int(parts[1])
             elif parts[0] == "resolutions":
                 resolutions = parts[1]
+            elif parts[0] == "dir":
+                path = parts[1]
+                files = [f for f in listdir(path) if isfile(join(path, f)) and splitext(f)[1] == ".jpg"]
     return
 
 #runs the command to change the wallpaper according the the given criteria
@@ -110,7 +115,7 @@ def help():
 
 #start actual script
 def main():
-    loadFromFile("background.cfg")
+    loadFromFile("./background.cfg")
 
     #checks if there are any command arguments
     if len(sys.argv) == 1:
@@ -122,10 +127,10 @@ def main():
 
     #responds to the given command
     if command == "set":
-        i = 3
+        i = monitorCount
         monitors = getMonitorList(sys.argv[2])
         for monitor in monitors:
-            if length - 3 >= len(monitors):
+            if length - monitorCount >= len(monitors):
                 setMonitor(monitor, sys.argv[i])
                 i = i + 1
             else:
