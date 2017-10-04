@@ -2,7 +2,7 @@ import subprocess
 import random
 import sys
 from os import listdir
-from os.path import isfile, join, splitext
+from os.path import isdir, isfile, join, splitext
 
 #definitions
 path = "."
@@ -29,7 +29,53 @@ def loadFromFile(fileName):
             elif parts[0] == "dir":
                 path = parts[1]
                 files = [f for f in listdir(path) if isfile(join(path, f)) and splitext(f)[1] == ".jpg"]
+    else:
+        print("No config file!")
+        buildConfigFile()
+        main()
     return
+
+#helps the user produce a config file
+def buildConfigFile():
+    monitorCount = promptMonitorCount()
+    resolutions = promptScreenResolutions(monitorCount)
+    path = promptBackgroundDir()
+    
+    file = open("background.cfg", 'w')
+    file.write("dir:" + path + "\nmonitorCount:" + str(monitorCount) + "\nresolutions:" + resolutions)
+    file.close()
+    print("Config written to background.cfg")
+    return
+
+def promptMonitorCount():
+    monitorCount = int(raw_input("How many displays do you have? "))
+    if monitorCount <= 0:
+        print("You must have at least 1 monitor!")
+        monitorCount = promptMonitorCount()
+    return monitorCount
+
+def promptScreenResolutions(monitorCount):
+    resolutions = ""
+    for i in range(0, monitorCount):
+        resolutions += promptScreenRes(i + 1)
+    return resolutions
+
+def promptScreenRes(screen):
+    res = raw_input("Monitor " + str(screen) + " resolution ([Width]x[Height])? ")
+    if 'x' in res:
+        if screen != 1:
+            res = "," + res
+    else:
+        print("Invalid input! Separate width and height with a 'x'")
+        res = promptScreenRes(screen)
+    return res
+
+def promptBackgroundDir():
+    path = raw_input("Where are your backgrounds stored? ")
+    if not isdir(path):
+        print("Not a valid directory!")
+        path = promptBackgroundDir()
+    return path
 
 #runs the command to change the wallpaper according the the given criteria
 def changeWallpaper(screen, type, file):
@@ -106,6 +152,8 @@ def help():
     print("list (filters)")
     print("save [config name]")
     print("load [config name]")
+    print("config")
+    print("rebuild")
     print("Options:")
     print("[monitors]\tall or comma separated list")
     print("[images]\tfile name in given directory, random, or a filter defined by f:[filter]")
@@ -161,6 +209,8 @@ def main():
     elif command == "config":
         print("Config info: " + str(monitorCount) + ":" + resolutions)
         print("Background location: " + path)
+    elif command == "rebuild":
+        buildConfigFile()
     else:
         print("Unknown Command")
         help()
