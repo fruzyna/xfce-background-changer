@@ -33,6 +33,7 @@ def loadFromFile(fileName):
 
 #runs the command to change the wallpaper according the the given criteria
 def changeWallpaper(screen, type, file):
+    print("Setting " + screen + " to " + file)
     bashCommand = "xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor" + screen + "/workspace0/" + type + " -s " + path + "/" + file 
     process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
     output, error = process.communicate()
@@ -60,7 +61,6 @@ def setMonitor(monitor, file):
 #randomly chooses a file from a list then prints its name
 def randomWPrint(files):
     file = random.choice(files)
-    print("Chose " + file);
     return file
 
 #finds all files that are valid under the given filters
@@ -128,10 +128,10 @@ def main():
 
     #responds to the given command
     if command == "set":
-        i = monitorCount
+        i = 3 
         monitors = getMonitorList(sys.argv[2])
         for monitor in monitors:
-            if length - monitorCount >= len(monitors):
+            if length - 3 >= len(monitors):
                 setMonitor(monitor, sys.argv[i])
                 i = i + 1
             else:
@@ -159,7 +159,8 @@ def main():
         else:
             print("A config name must be provided!");
     elif command == "config":
-        print("Loaded config info: " + str(monitorCount) + ":" + resolutions)
+        print("Config info: " + str(monitorCount) + ":" + resolutions)
+        print("Background location: " + path)
     else:
         print("Unknown Command")
         help()
