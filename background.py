@@ -10,6 +10,8 @@ files = [f for f in listdir(path) if isfile(join(path, f)) and splitext(f)[1] ==
 image = "last-image"
 monitorCount = 0
 resolutions = ""
+setcmd = "xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor[screenNo]/workspace0/last-image -s [path]" 
+getcmd = "xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor[screenNo]/workspace0/last-image"
 
 #loads in settings from file
 def loadFromFile(fileName):
@@ -17,11 +19,15 @@ def loadFromFile(fileName):
     global resolutions
     global files
     global path
+    global setcmd
+    global getcmd
     if isfile(fileName):
         file = open(fileName, 'r')
         settings = file.read().split('\n')
         for setting in settings:
             parts = setting.split(":")
+            for i in range(0, len(parts)):
+                parts[i] = parts[i].replace("*;", ":")
             if parts[0] == "monitorCount":
                 monitorCount = int(parts[1])
             elif parts[0] == "resolutions":
@@ -29,6 +35,10 @@ def loadFromFile(fileName):
             elif parts[0] == "dir":
                 path = parts[1]
                 files = [f for f in listdir(path) if isfile(join(path, f)) and splitext(f)[1] == ".jpg"]
+            elif parts[0] == "set-command":
+                setcmd = parts[1]
+            elif parts[0] == "get-command":
+                getcmd = parts[1]
     else:
         print("No config file!")
         buildConfigFile()
@@ -80,7 +90,7 @@ def promptBackgroundDir():
 #runs the command to change the wallpaper according the the given criteria
 def changeWallpaper(screen, type, file):
     print("Setting " + screen + " to " + file)
-    bashCommand = "xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor" + screen + "/workspace0/" + type + " -s " + path + "/" + file 
+    bashCommand = setcmd.replace("[screenNo]", screen).replace("[path]", path + "/" + file)
     process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
     output, error = process.communicate()
     return
@@ -122,11 +132,11 @@ def saveConfig(configName):
     for i in range(0, monitorCount):
         if i != 0:
             file.write(",")
-        bashCommand = "xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor" + str(i) + "/workspace0/" + image
+        bashCommand = getcmd.replace("[screenNo]", str(i))
         process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
         output, error = process.communicate()
         output = output.rsplit('/', 1)[1]
-        output = output.replace("\n", "");
+        output = output.replace("\'", "").replace("\n", "");
         file.write(output);
     file.close()
     return
