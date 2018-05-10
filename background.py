@@ -1,22 +1,38 @@
 import subprocess
 import random
 import sys
-from os import listdir
-from os.path import isdir, isfile, join, splitext
+from os import listdir, mkdir
+from os.path import isdir, isfile, join, splitext, expanduser, exists, realpath
 
-#definitions
-path = "."
-files = [f for f in listdir(path) if isfile(join(path, f)) and splitext(f)[1] == ".jpg"]
-image = "last-image"
-monitorCount = 0
-resolutions = ""
-setcmd = "xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor[screenNo]/workspace0/last-image -s [path]" 
+config = expanduser('~/.config/Background-Changer/')
+cFile = join(config, 'background.cfg')
 getcmd = "xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor[screenNo]/workspace0/last-image"
+setcmd = "xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitor[screenNo]/workspace0/last-image -s [path]" 
+image = "last-image"
+path = "."
+monitorCount = 1
+files = [f for f in listdir(path) if isfile(join(path, f)) and splitext(f)[1] == ".jpg"]
+
+def load():
+    files = [f for f in listdir(path) if isfile(join(path, f)) and splitext(f)[1] == ".jpg"]
+
+def install():
+    if not exists(config):
+        mkdir(config)
+    file = open(cFile, 'w+')
+    path = expanduser(raw_input('Wallpaper directory: '))
+    file.write('dir:' + path + '\n')
+    monitorCount = int(expanduser(raw_input('Number of displays: ')))
+    file.write('monitorCount:' + str(monitorCount) + '\n')
+    file.write('set-command:' + setcmd + '\n')
+    file.write('get-command:' + getcmd + '\n')
+    file.close()
+    print('Please edit file at ' + config + ' to finish setup')
+
 
 #loads in settings from file
 def loadFromFile(fileName):
     global monitorCount
-    global resolutions
     global files
     global path
     global setcmd
@@ -30,8 +46,6 @@ def loadFromFile(fileName):
                 parts[i] = parts[i].replace("*;", ":")
             if parts[0] == "monitorCount":
                 monitorCount = int(parts[1])
-            elif parts[0] == "resolutions":
-                resolutions = parts[1]
             elif parts[0] == "dir":
                 path = parts[1]
                 files = [f for f in listdir(path) if isfile(join(path, f)) and splitext(f)[1] == ".jpg"]
@@ -41,51 +55,9 @@ def loadFromFile(fileName):
                 getcmd = parts[1]
     else:
         print("No config file!")
-        buildConfigFile()
+        install()
         main()
     return
-
-#helps the user produce a config file
-def buildConfigFile():
-    monitorCount = promptMonitorCount()
-    resolutions = promptScreenResolutions(monitorCount)
-    path = promptBackgroundDir()
-    
-    file = open("background.cfg", 'w')
-    file.write("dir:" + path + "\nmonitorCount:" + str(monitorCount) + "\nresolutions:" + resolutions)
-    file.close()
-    print("Config written to background.cfg")
-    return
-
-def promptMonitorCount():
-    monitorCount = int(raw_input("How many displays do you have? "))
-    if monitorCount <= 0:
-        print("You must have at least 1 monitor!")
-        monitorCount = promptMonitorCount()
-    return monitorCount
-
-def promptScreenResolutions(monitorCount):
-    resolutions = ""
-    for i in range(0, monitorCount):
-        resolutions += promptScreenRes(i + 1)
-    return resolutions
-
-def promptScreenRes(screen):
-    res = raw_input("Monitor " + str(screen) + " resolution ([Width]x[Height])? ")
-    if 'x' in res:
-        if screen != 1:
-            res = "," + res
-    else:
-        print("Invalid input! Separate width and height with a 'x'")
-        res = promptScreenRes(screen)
-    return res
-
-def promptBackgroundDir():
-    path = raw_input("Where are your backgrounds stored? ")
-    if not isdir(path):
-        print("Not a valid directory!")
-        path = promptBackgroundDir()
-    return path
 
 #runs the command to change the wallpaper according the the given criteria
 def changeWallpaper(screen, type, file):
@@ -173,7 +145,7 @@ def help():
 
 #start actual script
 def main():
-    loadFromFile("./background.cfg")
+    loadFromFile(cFile)
 
     length = len(sys.argv)
 
@@ -220,10 +192,13 @@ def main():
         print("Config info: " + str(monitorCount) + ":" + resolutions)
         print("Background location: " + path)
     elif command == "rebuild":
-        buildConfigFile()
+        install()
     else:
         print("Unknown Command")
         help()
     return
 	
+if not exists(config):
+    install()
+
 main()
