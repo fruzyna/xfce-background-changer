@@ -108,8 +108,8 @@ def saveConfig(configName):
         process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
         output, error = process.communicate()
         output = output.rsplit('/', 1)[1]
-        output = output.replace("\'", "").replace("\n", "");
-        file.write(output);
+        output = output.replace("\'", "").replace("\n", "")
+        file.write(output)
     file.close()
     return
 
@@ -182,14 +182,14 @@ def main():
         if length > 2:
             saveConfig(sys.argv[2])
         else:
-            print("A config name must be provided!");
+            print("A config name must be provided!")
     elif command == "load":
         if length > 2:
             loadConfig(sys.argv[2])
         else:
-            print("A config name must be provided!");
+            print("A config name must be provided!")
     elif command == "config":
-        print("Config info: " + str(monitorCount) + ":" + resolutions)
+        print("Monitors: " + str(monitorCount))
         print("Background location: " + path)
     elif command == "rebuild":
         install()
