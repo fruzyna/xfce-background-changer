@@ -48,7 +48,7 @@ def loadFromFile(fileName):
                 monitorCount = int(parts[1])
             elif parts[0] == "dir":
                 path = parts[1]
-                files = [f for f in listdir(path) if isfile(join(path, f)) and splitext(f)[1] == ".jpg"]
+                files = [f for f in listdir(path) if isfile(join(path, f)) and (splitext(f)[1] == ".jpg" or splitext(f)[1] == ".png")]
             elif parts[0] == "set-command":
                 setcmd = parts[1]
             elif parts[0] == "get-command":
